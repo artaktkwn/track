@@ -19,28 +19,44 @@ jobs:
       - run: npm test
 
   dependency-track:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+        runs-on: ubuntu-latest
 
-      - name: Download CycloneDX CLI binary
-        run: |
-          curl -LJO https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-cli-linux-x64.tar.gz
-          tar -xzf cyclonedx-cli-linux-x64.tar.gz
-          chmod +x cyclonedx
-          sudo mv cyclonedx /usr/local/bin/
-          rm cyclonedx-cli-linux-x64.tar.gz
-  
-      - name: Generate SBOM
-        run: |
-          npm i --save @cyclonedx/bom
-          cyclonedx -d -t application -o ./bom.json
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
 
-      - name: Upload SBOM to Dependency-Track
-        run: |
-          curl -X POST -F "bom=@bom.json" -H "X-Api-Key: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}" ${{ secrets.DEPENDENCY_TRACK_URL }}/api/v1/bom
+        - name: Set up Node.js
+          uses: actions/setup-node@v3
+          with:
+            node-version: '14.16'
+
+        - name: Install dependencies
+          run: |
+            npm install --silent
+
+        - name: Generate SBOM
+          run: npm run sbom
+
+        - name: Upload SBOM to Dependency Track
+          run: |
+            curl --location --request POST 'http://35.222.227.149:8080/api/dashboard' \
+            -H 'Content-Type: multipart/form-data' \
+            -H 'X-Api-Key: $DEPENDENCY_TRACK_API_KEY' \
+            -F 'project=$PROJECT_UUID' \
+            -F 'bom=@./bom.json'
+
+        - name: Create or Update Project in Dependency Track
+          run: |
+            curl --location --request POST 'https://dependency-tracker.mydomain.com/api/v1/project' \
+            -H 'X-Api-Key: $DEPENDENCY_TRACK_API_KEY' \
+            -H 'Content-Type: application/json' \
+            --data-raw '{
+              "uuid": "'$PROJECT_UUID'",
+              "name": "project name",
+              "version": "'$VERSION'"
+            }'
+
         env:
           DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
-          DEPENDENCY_TRACK_URL: http://35.222.227.149:8080/dashboard
+          PROJECT_UUID: 186cdd50-d1f4-445a-a147-a305f6571ba8
+          VERSION: v1
