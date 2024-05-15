@@ -24,15 +24,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Install CycloneDX Node.js CLI
         run: npm install -g @cyclonedx/cli
-
   
       - name: Generate SBOM
         run: |
           npm i --save @cyclonedx/bom
           cyclonedx-node -d -t application -o ./bom.json
-        # If you prefer using 'npm audit', use it directly without '--json' flag
 
       - name: Upload SBOM to Dependency-Track
         run: |
@@ -40,3 +39,17 @@ jobs:
         env:
           DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
           DEPENDENCY_TRACK_URL: http://35.222.227.149:8080/dashboard
+
+  cyclonedx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install CycloneDX Node.js CLI
+        run: npm install -g @cyclonedx/cli
+  
+      - name: Generate SBOM
+        run: |
+          npm i --save @cyclonedx/bom
+          cyclonedx-node -d -t application -o ./bom.json
