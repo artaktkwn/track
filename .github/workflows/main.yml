@@ -35,28 +35,13 @@ jobs:
             npm install --silent
 
         - name: Generate SBOM
-          run: npm run sbom
+          run: npx auditjs@latest ossi
 
-        - name: Upload SBOM to Dependency Track
+        - name: Generate SBOM and Upload to Dependency-Track
           run: |
-            curl --location --request POST 'http://35.222.227.149:8080/api/dashboard' \
-            -H 'Content-Type: multipart/form-data' \
-            -H 'X-Api-Key: $DEPENDENCY_TRACK_API_KEY' \
-            -F 'project=$PROJECT_UUID' \
-            -F 'bom=@./bom.json'
+            npm auditjs --file package.json --output bom.json
+            curl -X POST -F "bom=@bom.json" -H "X-Api-Key: $DEPENDENCY_TRACK_API_KEY" $DEPENDENCY_TRACK_URL/api/v1/bom
+          env:
+              DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+              DEPENDENCY_TRACK_URL: http://35.222.227.149:8080/dashboard
 
-        - name: Create or Update Project in Dependency Track
-          run: |
-            curl --location --request POST 'https://dependency-tracker.mydomain.com/api/v1/project' \
-            -H 'X-Api-Key: $DEPENDENCY_TRACK_API_KEY' \
-            -H 'Content-Type: application/json' \
-            --data-raw '{
-              "uuid": "'$PROJECT_UUID'",
-              "name": "project name",
-              "version": "'$VERSION'"
-            }'
-
-        env:
-          DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
-          PROJECT_UUID: 186cdd50-d1f4-445a-a147-a305f6571ba8
-          VERSION: v1
