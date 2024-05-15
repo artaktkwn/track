@@ -1,14 +1,10 @@
 name: Node.js CI/CD
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:  # This allows manual triggering of the workflow
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -22,10 +18,16 @@ jobs:
     - run: npm install
     - run: npm test
 
-    - name: Install Railway
-      run: npm i -g @railway/cli
-    
-    - name: Deploy
-      run: railway up
+  dependency-track:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Generate SBOM and Upload to Dependency-Track
+      run: |
+        npm auditjs --file package.json --output bom.json
+        curl -X POST -F "bom=@bom.json" -H "X-Api-Key: $DEPENDENCY_TRACK_API_KEY" $DEPENDENCY_TRACK_URL/api/v1/bom
       env:
-        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+        DEPENDENCY_TRACK_URL: http://35.222.227.149:8080/dashboard
