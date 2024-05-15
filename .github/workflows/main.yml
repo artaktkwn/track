@@ -46,4 +46,4 @@ jobs:
           curl -X POST -F "bom=@bom.json" -H "X-Api-Key: $DEPENDENCY_TRACK_API_KEY" $DEPENDENCY_TRACK_URL/api/v1/bom
         env:
           DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
-          DEPENDENCY_TRACK_URL: http://35.222.227.149:8080/dashboard
+          DEPENDENCY_TRACK_URL: https://services.nvd.nist.gov/rest/json/cves/2.0
