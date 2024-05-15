@@ -27,11 +27,11 @@ jobs:
 
       - name: Download CycloneDX CLI binary
         run: |
-          curl -LO https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-cli-linux-x64.tar.gz
+          curl -LJO https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-cli-linux-x64.tar.gz
           tar -xzf cyclonedx-cli-linux-x64.tar.gz
-          mv cyclonedx-cli-linux-x64/cyclonedx /usr/local/bin/
-          chmod +x /usr/local/bin/cyclonedx
-          rm -rf cyclonedx-cli-linux-x64 cyclonedx-cli-linux-x64.tar.gz
+          chmod +x cyclonedx
+          sudo mv cyclonedx /usr/local/bin/
+          rm cyclonedx-cli-linux-x64.tar.gz
   
       - name: Generate SBOM
         run: |
