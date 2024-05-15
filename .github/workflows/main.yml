@@ -35,15 +35,14 @@ jobs:
         with:
           node-version: '14.16'
 
-      - name: Install auditjs
-        run: npx auditjs@latest ossi
+      - name: Install dependencies
+        run: npm install --silent
 
       - name: Generate SBOM
-        run: auditjs ossi
+        run: npm audit --json > bom.json
 
-      - name: Generate SBOM and Upload to Dependency-Track
+      - name: Upload SBOM to Dependency-Track
         run: |
-          npm audit --json > bom.json
           curl -X POST -F "bom=@bom.json" -H "X-Api-Key: $DEPENDENCY_TRACK_API_KEY" $DEPENDENCY_TRACK_URL/api/v1/bom
         env:
           DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
