@@ -1,3 +1,8 @@
+name: Node.js CI/CD
+
+on:
+  workflow_dispatch:  # This allows manual triggering of the workflow
+
 jobs:
   build:
     runs-on: ubuntu-latest
