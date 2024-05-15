@@ -36,7 +36,7 @@ jobs:
           node-version: '14.16'
 
       - name: Install auditjs
-        run: npm install -g auditjs@latest
+        run: npx auditjs@latest ossi
 
       - name: Generate SBOM
         run: auditjs ossi
