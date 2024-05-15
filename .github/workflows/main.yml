@@ -25,24 +25,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Check Node.js version
-        run: node --version
-
-      - name: Check npm version
-        run: npm --version
-
-      - name: Print current directory
-        run: pwd
-
-      - name: List directory contents
-        run: ls -la
-
-      - name: Clear npm cache
-        run: npm cache clean --force
-
       - name: Generate SBOM
         run: |
-          npm audit --json > bom.json
+          npm i --save @cyclonedx/bom
+          cyclonedx-node -d -t application -o ./bom.json
         # If you prefer using 'npm audit', use it directly without '--json' flag
 
       - name: Upload SBOM to Dependency-Track
