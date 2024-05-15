@@ -29,12 +29,12 @@ jobs:
         run: |
           curl -LO https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-cli-linux-x64
           chmod +x cyclonedx-cli-linux-x64
-          mv cyclonedx-cli-linux-x64 /usr/local/bin/cyclonedx
+          sudo mv cyclonedx-cli-linux-x64 /usr/local/bin/cyclonedx
   
       - name: Generate SBOM
         run: |
           npm i --save @cyclonedx/bom
-          cyclonedx -d -t application -o ./bom.json
+          /usr/local/bin/cyclonedx -d -t application -o ./bom.json
 
       - name: Upload SBOM to Dependency-Track
         run: |
