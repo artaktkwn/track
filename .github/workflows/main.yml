@@ -25,20 +25,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install CycloneDX CLI
+      - name: Download and install CycloneDX CLI
         run: |
           curl -LO https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-cli-linux-x64
           chmod +x cyclonedx-cli-linux-x64
-          mv cyclonedx-cli-linux-x64 /usr/local/bin/cyclonedx
+          sudo mv cyclonedx-cli-linux-x64 /usr/local/bin/cyclonedx
           # Verify installation
           ls -l /usr/local/bin/cyclonedx
-          # Print PATH
-          echo "$PATH"
+          # Print version to verify installation
+          cyclonedx --version
   
       - name: Generate SBOM
         run: |
           npm i --save @cyclonedx/bom
-          cyclonedx -d -t application -o ./bom.json
+          /usr/local/bin/cyclonedx -d -t application -o ./bom.json
 
       - name: Upload SBOM to Dependency-Track
         run: |
