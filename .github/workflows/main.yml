@@ -43,7 +43,8 @@ jobs:
 
       - name: Upload SBOM to Dependency-Track
         run: |
-          curl -X POST -F "bom=@bom.json" -H "X-Api-Key: $DEPENDENCY_TRACK_API_KEY" $DEPENDENCY_TRACK_URL/api/v1/bom
-        env:
-          DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
-          DEPENDENCY_TRACK_URL: http://35.222.227.149:8080/projects/186cdd50-d1f4-445a-a147-a305f6571ba8
+          curl -X "POST" "http://35.222.227.149:8080/api/v1/bom" \
+               -H 'Content-Type: multipart/form-data' \
+               -H 'X-Api-Key: odt_bUezJHC1HywqCwemxFiR0DsiwVQj9lzv' \
+               -F "project=186cdd50-d1f4-445a-a147-a305f6571ba8" \
+               -F "bom=<?xml version=\"1.0\" encoding=\"UTF-8\"?>..."
