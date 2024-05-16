@@ -40,6 +40,8 @@ jobs:
 
       - name: Generate SBOM
         run: npm audit --json > bom.json
+      - name: echo sbom
+        run: cat bom.json
 
       - name: Upload SBOM to Dependency-Track
         run: |
