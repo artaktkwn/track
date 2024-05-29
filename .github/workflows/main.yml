@@ -39,7 +39,7 @@ jobs:
         run: npm install -g @cyclonedx/cyclonedx-npm
 
       - name: Generate SBOM
-        run: cyclonedx-npm --output sbom.json    
+        run: cyclonedx-npm --output-file sbom.json    
 
       - name: Upload SBOM to Dependency-Track
         run: |
