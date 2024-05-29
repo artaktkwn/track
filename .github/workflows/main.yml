@@ -49,5 +49,5 @@ jobs:
           curl -X POST "http://forlearning.online/api/v1/bom" \
             -H 'Content-Type: multipart/form-data' \
             -H 'X-Api-Key: odt_Evt2kmmVxL2fJAjpt8ras3B2MZ6yTe5X' \
-            -F "project=3065c01b-0cdb-43fa-a768-dae94f8698c8" \
+            -F "project=485456e3-d1f4-4226-a7e2-3c9230ef9c73" \
             -F "bom=@sbom.json"
