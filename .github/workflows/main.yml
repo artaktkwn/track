@@ -48,6 +48,6 @@ jobs:
         run: |
          curl -X "POST" "http://forlearning.online/api/v1/bom"   /
          -H 'Content-Type: multipart/form-data'  /
-         -H 'X-Api-Key: CBfAoXjTuuk5VHOuyYA7v0hCFk8KOHpv'   /
-         -F "project=1f65617e-cda2-4f43-8df4-74f901de07c3"  /
+         -H 'X-Api-Key: odt_Evt2kmmVxL2fJAjpt8ras3B2MZ6yTe5X'   /
+         -F "project=3065c01b-0cdb-43fa-a768-dae94f8698c8"  /
          -F "bom=@sbom.json"
