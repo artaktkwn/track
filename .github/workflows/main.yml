@@ -37,6 +37,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install --silent
+      - name: Install Cyclonedx
+        run: npm install -g @cyclonedx/cyclonedx-npm
 
       - name: Generate SBOM
         run: cyclonedx-npm --output-file sbom.json
