@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload SBOM to Dependency-Track
         run: |
-         curl -X "POST" "http://forlearning.online//api/v1/bom"   /
+         curl -X "POST" "http://forlearning.online/api/v1/bom"   /
          -H 'Content-Type: multipart/form-data'  /
          -H 'X-Api-Key: CBfAoXjTuuk5VHOuyYA7v0hCFk8KOHpv'   /
          -F "project=1f65617e-cda2-4f43-8df4-74f901de07c3"  /
