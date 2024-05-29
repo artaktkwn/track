@@ -30,10 +30,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Use Node.js 16
         uses: actions/setup-node@v3
         with:
-          node-version: '14.16'
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Install Cyclonedx
         run: npm install -g @cyclonedx/cyclonedx-npm
@@ -43,8 +46,8 @@ jobs:
 
       - name: Upload SBOM to Dependency-Track
         run: |
-         curl -X "POST" "http://forlearning.online/api/v1/bom"   /
-         -H 'Content-Type: multipart/form-data'  /
-         -H 'X-Api-Key: odt_Evt2kmmVxL2fJAjpt8ras3B2MZ6yTe5X'   /
-         -F "project=3065c01b-0cdb-43fa-a768-dae94f8698c8"  /
-         -F "bom=@sbom.json"
+          curl -X POST "http://forlearning.online/api/v1/bom" \
+            -H 'Content-Type: multipart/form-data' \
+            -H 'X-Api-Key: odt_Evt2kmmVxL2fJAjpt8ras3B2MZ6yTe5X' \
+            -F "project=3065c01b-0cdb-43fa-a768-dae94f8698c8" \
+            -F "bom=@sbom.json"
