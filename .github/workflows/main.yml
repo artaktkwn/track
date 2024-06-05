@@ -34,22 +34,20 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: Install
-        run: npm install -g npm
-      - name: installing
-        run: npm install
+
       - name: Install dependencies
-        run: npm install --silent
+        run: npm install
+
+      - name: Install Cyclonedx
+        run: npm install -g @cyclonedx/cyclonedx-npm
 
       - name: Generate SBOM
-        run: npm audit --json > bom.json
-      - name: echo sbom
-        run: cat bom.json
-        
+        run: cyclonedx-npm --output-file sbom.json    
+
       - name: Upload SBOM to Dependency-Track
         run: |
-          curl -X POST "http://forlearning.online/api/v1/bom" \
+          curl -X POST "https://dt.tokenwin.dev/api/v1/bom" \
             -H 'Content-Type: multipart/form-data' \
-            -H 'X-Api-Key: odt_Evt2kmmVxL2fJAjpt8ras3B2MZ6yTe5X' \
-            -F "project=485456e3-d1f4-4226-a7e2-3c9230ef9c73" \
+            -H 'X-Api-Key: odt_J72k9XamgZHyttFOnWwH7jEWJZ4dIMQX' \
+            -F "project=deb68f14-0af4-4d04-9c53-b0af08292ffd" \
             -F "bom=@sbom.json"
