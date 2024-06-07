@@ -1,60 +1,126 @@
-name: Node.js CI/CD
+name: Security CI/CD
 
 on:
-  workflow_dispatch:  # This allows manual triggering of the workflow
+  workflow_dispatch:  # Allows manual triggering of the workflow
     inputs:
-      environment:
-        description: 'Deployment environment'
+      project_name:
+        description: 'Dependency Tracker Project Name'
         required: true
-        default: 'development'
-      version:
-        description: 'Version to deploy'
-        required: false
+      project_version:
+        description: 'Project Version'
+        required: true
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Use Node.js 16
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-
   dependency-track:
-    runs-on: ubuntu-latest
+    environment: development
+    runs-on: ubuntu-latest  # Use a standard runner
 
     steps:
-      - name: Checkout code
+      - name: Checkout 
         uses: actions/checkout@v3
 
-      - name: Use Node.js 16
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.DEV_GCP_CREDENTIALS }}'
+
+      - id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: 'cluster-1'
+          location: 'europe-west4-c'
+
+      - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      - name: Install Cyclonedx
-        run: npm install -g @cyclonedx/cyclonedx-npm
+      - name: Setup pnpm global bin directory
+        shell: bash  # Ensure that bash is used as the shell
+        env:
+          SHELL: bash  # Explicitly set the shell to bash
+        run: |
+          pnpm setup
+          echo "export PNPM_HOME=$(pnpm env get-bin-dir)" >> $GITHUB_ENV
+          echo "export PATH=$PNPM_HOME:$PATH" >> $GITHUB_ENV
+
+      - name: Verify pnpm setup
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          source $GITHUB_ENV
+          pnpm --version
+          which pnpm
+
+      - name: Install dependencies using pnpm
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          source $GITHUB_ENV
+          pnpm install
+
+      - name: Install CycloneDX globally using pnpm
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          source $GITHUB_ENV
+          pnpm add -g @cyclonedx/cyclonedx-npm
+
+      - name: Check CycloneDX installation
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          source $GITHUB_ENV
+          cyclonedx-npm --version
+          which cyclonedx-npm
 
       - name: Generate SBOM
-        run: cyclonedx-npm --output-file sbom.json    
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          source $GITHUB_ENV
+          cyclonedx-npm --output-file sbom.json
+
+      - name: Set Project Name and Version
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          echo "Setting Project Name and Version"
+          echo "PROJECT_NAME=${{ github.event.inputs.project_name }}" >> $GITHUB_ENV
+          echo "PROJECT_VERSION=${{ github.event.inputs.project_version }}" >> $GITHUB_ENV
+
+      - name: Check if project exists
+        id: check_project
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          source $GITHUB_ENV
+          RESPONSE=$(curl -s -X GET "http://deptracker-dependency-track-api-server.deptracker.svc.cluster.local/api/v1/project?name=${PROJECT_NAME}" -H "X-Api-Key: ${{ secrets.DT_ACCESS_API_KEY }}")
+          if echo "$RESPONSE" | grep -q '"name":"${PROJECT_NAME}"'; then
+            echo "Project exists"
+            echo "::set-output name=project_exists::true"
+          else
+            echo "Project does not exist"
+            echo "::set-output name=project_exists::false"
+          fi
+
+      - name: Create project if not exists
+        if: steps.check_project.outputs.project_exists == 'false'
+        shell: bash  # Ensure that bash is used as the shell
+        run: |
+          source $GITHUB_ENV
+          curl -s -X PUT "http://deptracker-dependency-track-api-server.deptracker.svc.cluster.local/api/v1/project" \
+            -H "Content-Type: application/json" \
+            -H "X-Api-Key: ${{ secrets.DT_ACCESS_API_KEY }}" \
+            -d '{
+              "name": "'"${PROJECT_NAME}"'",
+              "version": "'"${PROJECT_VERSION}"'"
+            }'
 
       - name: Upload SBOM to Dependency-Track
+        shell: bash  # Ensure that bash is used as the shell
         run: |
-          curl -X POST "https://dt.tokenwin.dev/api/v1/bom" \
+          source $GITHUB_ENV
+          curl -X POST "http://deptracker-dependency-track-api-server.deptracker.svc.cluster.local/api/v1/bom" \
             -H 'Content-Type: multipart/form-data' \
-            -H 'X-Api-Key: odt_J72k9XamgZHyttFOnWwH7jEWJZ4dIMQX' \
-            -F "project=deb68f14-0af4-4d04-9c53-b0af08292ffd" \
+            -H 'X-Api-Key: ${{ secrets.DT_ACCESS_API_KEY }}' \
+            -F "autoCreate=true" \
+            -F "projectName=${PROJECT_NAME}" \
+            -F "projectVersion=${PROJECT_VERSION}" \
             -F "bom=@sbom.json"
