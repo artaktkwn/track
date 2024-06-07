@@ -40,7 +40,10 @@ jobs:
 
       - name: Generate SBOM
         run: pnpx cyclonedx-bom --package-manager pnpm --input ./pnpm-lock.yaml --output bom.json
-
+      - name: Display BOM contents
+        run: |
+          cat bom.json
+          
       - name: Check if project exists
         id: check_project
         run: |
