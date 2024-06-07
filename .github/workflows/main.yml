@@ -28,20 +28,18 @@ jobs:
           npm install -g pnpm
           pnpm install
 
-      - name: Install CycloneDX library
+      - name: Clone @cyclonedx/cli repository
         run: |
-          pnpm add @cyclonedx/cyclonedx-library
-      - name: INstall
-        run: pnpm install @cyclonedx/cli --save-dev
-        
-      - name: Generate SBOM
-        run: pnpx cyclonedx-bom --package-manager pnpm --input ./pnpm-lock.yaml --output bom.json
+          git clone https://github.com/CycloneDX/cyclonedx-node-module.git node_modules/@cyclonedx/cli
 
       - name: Set Project Name and Version
         run: |
           echo "Setting Project Name and Version"
           echo "PROJECT_NAME=${{ github.event.inputs.project_name }}" >> $GITHUB_ENV
           echo "PROJECT_VERSION=${{ github.event.inputs.project_version }}" >> $GITHUB_ENV
+
+      - name: Generate SBOM
+        run: pnpx cyclonedx-bom --package-manager pnpm --input ./pnpm-lock.yaml --output bom.json
 
       - name: Check if project exists
         id: check_project
