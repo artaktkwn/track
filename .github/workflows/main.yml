@@ -33,7 +33,7 @@ jobs:
           pnpm add @cyclonedx/cyclonedx-library
 
       - name: Generate SBOM
-        run: pnpm exec cyclonedx-npm --output-file sbom.json
+        run: cyclonedx-pnpm --output-file sbom.json
 
       - name: Set Project Name and Version
         run: |
