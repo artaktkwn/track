@@ -21,51 +21,24 @@ jobs:
       - name: Use Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 18.17
 
       - name: Install pnpm
-        run: npm install -g pnpm
-
-      - name: Setup pnpm global bin directory
-        shell: bash  # Ensure that bash is used as the shell
         run: |
-          pnpm setup
-          echo "export PNPM_HOME=$(pnpm env get-bin-dir)" >> $GITHUB_ENV
-          echo "export PATH=$PNPM_HOME:$PATH" >> $GITHUB_ENV
-
-      - name: Verify pnpm setup
-        run: |
-          source $GITHUB_ENV
-          pnpm --version
-          which pnpm
-
-      - name: Install dependencies using pnpm
-        run: |
-          source $GITHUB_ENV
-          pnpm install
-
+          npm install -g pnpm
+          pnpm i
       - name: Install CycloneDX globally using pnpm
         run: |
-          source $GITHUB_ENV
-          pnpm add -g @cyclonedx/cyclonedx-npm
-
-      - name: Check CycloneDX installation
-        run: |
-          source $GITHUB_ENV
-          cyclonedx-npm --version
-          which cyclonedx-npm
-
+          pnpm add @cyclonedx/cyclonedx-library
       - name: Generate SBOM
         run: |
           source $GITHUB_ENV
           cyclonedx-npm --output-file sbom.json
-
       - name: Set Project Name and Version
         run: |
           echo "Setting Project Name and Version"
           echo "PROJECT_NAME=${{ github.event.inputs.project_name }}" >> $GITHUB_ENV
           echo "PROJECT_VERSION=${{ github.event.inputs.project_version }}" >> $GITHUB_ENV
-
       - name: Check if project exists
         id: check_project
         run: |
@@ -78,7 +51,6 @@ jobs:
             echo "Project does not exist"
             echo "::set-output name=project_exists::false"
           fi
-
       - name: Create project if not exists
         if: steps.check_project.outputs.project_exists == 'false'
         run: |
@@ -89,6 +61,17 @@ jobs:
             -d '{
               "name": "'"${PROJECT_NAME}"'",
               "version": "'"${PROJECT_VERSION}"'"
+            }'
+      - name: Upload SBOM to Dependency-Track
+        run: |
+          source $GITHUB_ENV
+          curl -X POST "http://deptracker-dependency-track-api-server.deptracker.svc.cluster.local/api/v1/bom" \
+            -H 'Content-Type: multipart/form-data' \
+            -H 'X-Api-Key: ${{ secrets.DT_ACCESS_API_KEY }}' \
+            -F "autoCreate=true" \
+            -F "projectName=${PROJECT_NAME}" \
+            -F "projectVersion=${PROJECT_VERSION}" \
+            -F "bom=@sbom.json"
             }'
 
       - n
