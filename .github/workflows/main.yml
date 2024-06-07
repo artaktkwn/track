@@ -28,47 +28,39 @@ jobs:
 
       - name: Setup pnpm global bin directory
         shell: bash  # Ensure that bash is used as the shell
-        env:
-          SHELL: bash  # Explicitly set the shell to bash
         run: |
           pnpm setup
           echo "export PNPM_HOME=$(pnpm env get-bin-dir)" >> $GITHUB_ENV
           echo "export PATH=$PNPM_HOME:$PATH" >> $GITHUB_ENV
 
       - name: Verify pnpm setup
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           source $GITHUB_ENV
           pnpm --version
           which pnpm
 
       - name: Install dependencies using pnpm
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           source $GITHUB_ENV
           pnpm install
 
       - name: Install CycloneDX globally using pnpm
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           source $GITHUB_ENV
           pnpm add -g @cyclonedx/cyclonedx-npm
 
       - name: Check CycloneDX installation
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           source $GITHUB_ENV
           cyclonedx-npm --version
           which cyclonedx-npm
 
       - name: Generate SBOM
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           source $GITHUB_ENV
           cyclonedx-npm --output-file sbom.json
 
       - name: Set Project Name and Version
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           echo "Setting Project Name and Version"
           echo "PROJECT_NAME=${{ github.event.inputs.project_name }}" >> $GITHUB_ENV
@@ -76,7 +68,6 @@ jobs:
 
       - name: Check if project exists
         id: check_project
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           source $GITHUB_ENV
           RESPONSE=$(curl -s -X GET "http://deptracker-dependency-track-api-server.deptracker.svc.cluster.local/api/v1/project?name=${PROJECT_NAME}" -H "X-Api-Key: ${{ secrets.DT_ACCESS_API_KEY }}")
@@ -90,7 +81,6 @@ jobs:
 
       - name: Create project if not exists
         if: steps.check_project.outputs.project_exists == 'false'
-        shell: bash  # Ensure that bash is used as the shell
         run: |
           source $GITHUB_ENV
           curl -s -X PUT "http://deptracker-dependency-track-api-server.deptracker.svc.cluster.local/api/v1/project" \
@@ -101,14 +91,4 @@ jobs:
               "version": "'"${PROJECT_VERSION}"'"
             }'
 
-      - name: Upload SBOM to Dependency-Track
-        shell: bash  # Ensure that bash is used as the shell
-        run: |
-          source $GITHUB_ENV
-          curl -X POST "http://deptracker-dependency-track-api-server.deptracker.svc.cluster.local/api/v1/bom" \
-            -H 'Content-Type: multipart/form-data' \
-            -H 'X-Api-Key: ${{ secrets.DT_ACCESS_API_KEY }}' \
-            -F "autoCreate=true" \
-            -F "projectName=${PROJECT_NAME}" \
-            -F "projectVersion=${PROJECT_VERSION}" \
-            -F "bom=@sbom.json"
+      - n
