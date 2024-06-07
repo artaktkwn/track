@@ -31,9 +31,11 @@ jobs:
       - name: Install CycloneDX library
         run: |
           pnpm add @cyclonedx/cyclonedx-library
-
+      - name: INstall
+        run: pnpm install @cyclonedx/cli --save-dev
+        
       - name: Generate SBOM
-        run: cyclonedx-pnpm --output-file sbom.json
+        run: pnpx cyclonedx-bom --package-manager pnpm --input ./pnpm-lock.yaml --output bom.json
 
       - name: Set Project Name and Version
         run: |
