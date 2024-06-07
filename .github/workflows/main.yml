@@ -26,19 +26,23 @@ jobs:
       - name: Install pnpm
         run: |
           npm install -g pnpm
-          pnpm i
-      - name: Install CycloneDX globally using pnpm
+          pnpm install
+
+      - name: Install CycloneDX library
         run: |
           pnpm add @cyclonedx/cyclonedx-library
+
       - name: Generate SBOM
         run: |
           source $GITHUB_ENV
-          cyclonedx-npm --output-file sbom.json
+          pnpm exec cyclonedx-npm --output-file sbom.json
+
       - name: Set Project Name and Version
         run: |
           echo "Setting Project Name and Version"
           echo "PROJECT_NAME=${{ github.event.inputs.project_name }}" >> $GITHUB_ENV
           echo "PROJECT_VERSION=${{ github.event.inputs.project_version }}" >> $GITHUB_ENV
+
       - name: Check if project exists
         id: check_project
         run: |
@@ -51,6 +55,7 @@ jobs:
             echo "Project does not exist"
             echo "::set-output name=project_exists::false"
           fi
+
       - name: Create project if not exists
         if: steps.check_project.outputs.project_exists == 'false'
         run: |
@@ -62,6 +67,7 @@ jobs:
               "name": "'"${PROJECT_NAME}"'",
               "version": "'"${PROJECT_VERSION}"'"
             }'
+
       - name: Upload SBOM to Dependency-Track
         run: |
           source $GITHUB_ENV
@@ -72,4 +78,3 @@ jobs:
             -F "projectName=${PROJECT_NAME}" \
             -F "projectVersion=${PROJECT_VERSION}" \
             -F "bom=@sbom.json"
-            }'
