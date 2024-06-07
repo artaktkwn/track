@@ -12,23 +12,11 @@ on:
 
 jobs:
   dependency-track:
-    environment: development
     runs-on: ubuntu-latest  # Use a standard runner
 
     steps:
       - name: Checkout 
         uses: actions/checkout@v3
-
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.DEV_GCP_CREDENTIALS }}'
-
-      - id: 'get-credentials'
-        uses: 'google-github-actions/get-gke-credentials@v2'
-        with:
-          cluster_name: 'cluster-1'
-          location: 'europe-west4-c'
 
       - name: Use Node.js 18
         uses: actions/setup-node@v3
