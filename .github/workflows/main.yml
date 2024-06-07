@@ -73,5 +73,3 @@ jobs:
             -F "projectVersion=${PROJECT_VERSION}" \
             -F "bom=@sbom.json"
             }'
-
-      - n
