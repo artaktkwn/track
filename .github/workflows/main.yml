@@ -33,9 +33,7 @@ jobs:
           pnpm add @cyclonedx/cyclonedx-library
 
       - name: Generate SBOM
-        run: |
-          source $GITHUB_ENV
-          pnpm exec cyclonedx-npm --output-file sbom.json
+        run: pnpm exec cyclonedx-npm --output-file sbom.json
 
       - name: Set Project Name and Version
         run: |
